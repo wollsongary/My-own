@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Data Breach Alert</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .breach-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0000;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            z-index: 9997;
+            display: none;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            border: 1px solid rgba(255, 0, 0, 0.4);
+            width: 320px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .breach-container.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .breach-header {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .breach-content {
+            font-family: 'Consolas', monospace;
+            line-height: 1.6;
+        }
+
+        .breach-line {
+            margin: 6px 0;
+            color: #ff0000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+        }
+
+        .file-path {
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+        }
+
+        .file-size {
+            color: #ff9900;
+        }
+
+        .status {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 0, 0, 0.2);
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            position: absolute;
+            height: 100%;
+            background: #ff0000;
+            width: 0%;
+            animation: progress 3s linear infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .breach-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 10px;
+            text-align: right;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <audio id="voiceAlert" loop>
+        <source src="voicealert.mp3" type="audio/mpeg">
+    </audio>
+    <div class="breach-container" id="breachContainer">
+        <div class="breach-header">DATA BREACH IN PROGRESS</div>
+        <div class="breach-content" id="breachContent">
+            <div class="breach-line">
+                <span class="file-path">C:/Users/Documents/banking_info.xlsx</span>
+                <span class="file-size">2.4 MB</span>
+                <span class="status">EXFILTRATING</span>
+            </div>
+            <div class="breach-line">
+                <span class="file-path">C:/Users/Downloads/passwords.db</span>
+                <span class="file-size">1.8 MB</span>
+                <span class="status">COMPROMISED</span>
+            </div>
+            <div class="breach-line">
+                <span class="file-path">C:/Users/Pictures/private_photos/</span>
+                <span class="file-size">156 MB</span>
+                <span class="status">UPLOADING</span>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="breach-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="filesCompromised">0</div>
+                <div class="stat-label">Files Compromised</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="dataStolen">0 MB</div>
+                <div class="stat-label">Data Stolen</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="timeElapsed">00:00</div>
+                <div class="stat-label">Time Elapsed</div>
+            </div>
+        </div>
+        <div class="timestamp" id="timestamp">00:00:00</div>
+    </div>
+
+    <script>
+        // Data breach information
+        const fileTypes = [
+            { path: 'C:/Users/Documents/', ext: ['.xlsx', '.doc', '.pdf', '.txt'] },
+            { path: 'C:/Users/Downloads/', ext: ['.db', '.sql', '.bak', '.zip'] },
+            { path: 'C:/Users/Pictures/', ext: ['/'] },
+            { path: 'C:/Users/Desktop/', ext: ['.exe', '.dll', '.sys'] },
+            { path: 'C:/Program Files/', ext: ['.config', '.ini', '.dat'] }
+        ];
+
+        const fileNames = [
+            'banking_info', 'passwords', 'private_photos', 'credit_cards',
+            'personal_docs', 'system_backup', 'encryption_keys', 'user_data',
+            'security_logs', 'admin_credentials', 'financial_records', 'private_keys'
+        ];
+
+        // Initialize when page loads
+        window.onload = function() {
+            const breachContainer = document.getElementById('breachContainer');
+            const breachContent = document.getElementById('breachContent');
+            const timestamp = document.getElementById('timestamp');
+            const filesCompromised = document.getElementById('filesCompromised');
+            const dataStolen = document.getElementById('dataStolen');
+            const timeElapsed = document.getElementById('timeElapsed');
+            const voiceAlert = document.getElementById('voiceAlert');
+            
+            let startTime = new Date();
+            let totalFiles = 0;
+            let totalData = 0;
+            
+            // Show the breach container after a delay
+            setTimeout(() => {
+                breachContainer.classList.add('visible');
+                startBreachMonitor();
+                
+                // Start voice alert after 10 seconds
+                setTimeout(() => {
+                    // Function to play voice alert
+                    function playVoiceAlert() {
+                        voiceAlert.currentTime = 0; // Reset to start
+                        voiceAlert.play().catch(error => {
+                            console.log('Voice alert play failed:', error);
+                        });
+                    }
+                    
+                    // Play immediately and then every 3 seconds
+                    playVoiceAlert();
+                    setInterval(playVoiceAlert, 3000);
+                }, 10000); // 10 seconds delay
+                
+            }, 5000); // Show after 5 seconds
+
+            function startBreachMonitor() {
+                // Update timestamp
+                function updateTime() {
+                    const now = new Date();
+                    timestamp.textContent = now.toLocaleTimeString('en-US', { 
+                        hour12: false, 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+
+                    // Update time elapsed
+                    const elapsed = Math.floor((now - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    timeElapsed.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+                
+                // Update time every second
+                setInterval(updateTime, 1000);
+                updateTime();
+
+                // Add new breach entries
+                function addBreachEntry() {
+                    const fileType = fileTypes[Math.floor(Math.random() * fileTypes.length)];
+                    const fileName = fileNames[Math.floor(Math.random() * fileNames.length)];
+                    const fileExt = fileType.ext[Math.floor(Math.random() * fileType.ext.length)];
+                    const fileSize = Math.floor(Math.random() * 500) + 1;
+                    const statuses = ['EXFILTRATING', 'COMPROMISED', 'UPLOADING', 'ENCRYPTED'];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    
+                    const line = document.createElement('div');
+                    line.className = 'breach-line';
+                    line.innerHTML = `
+                        <span class="file-path">${fileType.path}${fileName}${fileExt}</span>
+                        <span class="file-size">${fileSize} MB</span>
+                        <span class="status">${status}</span>
+                    `;
+                    
+                    breachContent.insertBefore(line, breachContent.firstChild);
+                    
+                    // Keep only last 3 entries
+                    while (breachContent.children.length > 3) {
+                        breachContent.removeChild(breachContent.lastChild);
+                    }
+
+                    // Update stats
+                    totalFiles++;
+                    totalData += fileSize;
+                    filesCompromised.textContent = totalFiles;
+                    dataStolen.textContent = `${totalData} MB`;
+                }
+
+                // Add new breach entries periodically
+                setInterval(addBreachEntry, 2500);
+            }
+        };
+    </script>
+</body>
+</html> 

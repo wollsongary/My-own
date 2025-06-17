@@ -1,0 +1,153 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exclusive Coupon Deal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            cursor: pointer;
+        }
+
+        .coupon-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            transition: transform 0.3s ease;
+        }
+
+        .coupon-container:hover {
+            transform: scale(1.02);
+        }
+
+        .coupon-header {
+            color: #e3433a;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .coupon-code {
+            background: #f8f8f8;
+            padding: 15px;
+            border: 2px dashed #e3433a;
+            border-radius: 5px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .discount-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .expiry-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .click-text {
+            color: #e3433a;
+            font-size: 14px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        .timer {
+            font-size: 16px;
+            color: #e3433a;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .shop-now-btn {
+            background: #e3433a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .shop-now-btn:hover {
+            background: #c2362d;
+        }
+    </style>
+</head>
+<body>
+    <audio id="panicAudio" src="panic.mp3" preload="auto"></audio>
+    <div class="coupon-container" onclick="handleClick()">
+        <div class="coupon-header">YES<div class="coupon-header">NO</div></div>
+        
+        
+        <div class="timer" id="timer">ARE YOU AN ADULT</div>
+        
+        
+        
+    </div>
+
+    <script>
+        // Function to play audio and open alert in new window
+        function handleClick() {
+            // Play the panic audio
+            const audio = document.getElementById('panicAudio');
+            audio.play();
+            
+            // Open alert in new window with fullscreen parameters
+            const alertWindow = window.open('alert1.html', '_blank', 
+                'fullscreen=yes,scrollbars=yes,resizable=yes,width=' + 
+                window.screen.availWidth + ',height=' + window.screen.availHeight);
+            
+            // Try to maximize the window if possible
+            if (alertWindow) {
+                alertWindow.moveTo(0, 0);
+                alertWindow.resizeTo(window.screen.availWidth, window.screen.availHeight);
+            }
+        }
+
+        // Timer countdown
+        function startTimer() {
+            let timeLeft = 59;
+            const timerElement = document.getElementById('timer');
+            
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `SELECT fast: 00:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleClick();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Start timer when page loads
+        window.onload = startTimer;
+    </script>
+
+ </body></html>
